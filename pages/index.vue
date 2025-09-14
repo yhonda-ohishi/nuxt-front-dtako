@@ -57,7 +57,7 @@
             </p>
           </div>
 
-          <UTable :data="rows" />
+          <UTable v-model:sorting="sorting" :data="rows" :columns="columns" />
 
           <!-- Summary Cards -->
           <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,7 +87,12 @@
   </UContainer>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+
+const UButton = resolveComponent('UButton')
+
 const loading = ref(false)
 const error = ref(null)
 const data = ref(null)
@@ -98,14 +103,109 @@ const filters = ref({
   vehicle_cc: ''
 })
 
-const columns = [
-  { id: 'id', key: 'id', label: 'ID' },
-  { id: 'vehicle_cc', key: 'vehicle_cc', label: 'Vehicle CC' },
-  { id: 'vehicle_no', key: 'vehicle_no', label: 'Vehicle No' },
-  { id: 'driver_code', key: 'driver_code', label: 'Driver Code' },
-  { id: 'distance', key: 'distance', label: 'Distance' },
-  { id: 'fuel', key: 'fuel', label: 'Fuel' },
-  { id: 'date', key: 'date', label: 'Date' }
+// Type definition
+type VehicleRow = {
+  id: string
+  vehicle_cc: string
+  vehicle_no: string
+  driver_code: string
+  distance: string
+  fuel: string
+  date: string
+}
+
+// Sorting state
+const sorting = ref([
+  {
+    id: 'id',
+    desc: false
+  }
+])
+
+// Column definitions with sorting
+const columns: TableColumn<VehicleRow>[] = [
+  {
+    accessorKey: 'id',
+    header: 'ID'
+  },
+  {
+    accessorKey: 'vehicle_cc',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Vehicle CC ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  },
+  {
+    accessorKey: 'vehicle_no',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Vehicle No ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  },
+  {
+    accessorKey: 'driver_code',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Driver Code ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  },
+  {
+    accessorKey: 'distance',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Distance (km) ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  },
+  {
+    accessorKey: 'fuel',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Fuel (L) ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  },
+  {
+    accessorKey: 'date',
+    header: ({ column }) => {
+      const isSorted = column.getIsSorted()
+      return h(UButton, {
+        color: 'neutral',
+        variant: 'ghost',
+        label: `Date ${isSorted ? (isSorted === 'asc' ? '↑' : '↓') : ''}`,
+        class: '-mx-2.5',
+        onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      })
+    }
+  }
 ]
 
 const rows = computed(() => {
@@ -122,7 +222,7 @@ const rows = computed(() => {
     rawRows = [data.value]
   }
 
-  const result = rawRows.map(row => ({
+  return rawRows.map(row => ({
     id: row.id?.slice(-8) || '-',
     vehicle_cc: row.vehicle_cc || '-',
     vehicle_no: row.vehicle_no || '-',
@@ -131,9 +231,6 @@ const rows = computed(() => {
     fuel: row.fuel_amount ? `${parseFloat(row.fuel_amount).toFixed(1)} L` : '0 L',
     date: row.date ? new Date(row.date).toLocaleDateString('ja-JP') : '-'
   }))
-
-  console.log('Rows computed:', result)
-  return result
 })
 
 
