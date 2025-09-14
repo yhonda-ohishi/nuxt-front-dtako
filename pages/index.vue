@@ -5,7 +5,7 @@
     <UCard>
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">Vehicle Operation Data</h2>
+          <h2 class="text-xl font-semibold">運行データ</h2>
           <UButton @click="fetchData" :loading="loading" variant="outline">
             Refresh
           </UButton>
@@ -14,26 +14,28 @@
 
       <div class="space-y-6">
         <!-- Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+        <div class="flex flex-col md:flex-row gap-4 md:items-end">
+          <div class="w-full md:w-auto">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
-            <UInput v-model="filters.from" type="date" />
+            <UInput v-model="filters.from" type="date" class="w-full md:w-48" />
           </div>
 
-          <div>
+          <div class="w-full md:w-auto">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
-            <UInput v-model="filters.to" type="date" />
+            <UInput v-model="filters.to" type="date" class="w-full md:w-48" />
+          </div>
+
+          <div class="w-full md:w-auto">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle CC</label>
+            <UInput v-model="filters.vehicle_cc" placeholder="Enter vehicle CC" class="w-full md:w-48" />
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Vehicle CC</label>
-            <UInput v-model="filters.vehicle_cc" placeholder="Enter vehicle CC" />
+            <UButton @click="fetchData" :loading="loading" size="md">
+              検索
+            </UButton>
           </div>
         </div>
-
-        <UButton @click="fetchData" :loading="loading" block>
-          Apply Filters
-        </UButton>
 
         <!-- Loading State -->
         <div v-if="loading" class="flex justify-center py-12">
@@ -92,6 +94,7 @@ import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
 const UButton = resolveComponent('UButton')
+const router = useRouter()
 
 const loading = ref(false)
 const error = ref(null)
@@ -126,7 +129,13 @@ const sorting = ref([
 const columns: TableColumn<VehicleRow>[] = [
   {
     accessorKey: 'id',
-    header: 'ID'
+    header: 'ID',
+    cell: ({ row }) => {
+      return h('a', {
+        href: `/events/${row.original.id}`,
+        class: 'text-blue-600 hover:underline font-medium cursor-pointer'
+      }, row.getValue('id'))
+    }
   },
   {
     accessorKey: 'vehicle_cc',
@@ -223,7 +232,8 @@ const rows = computed(() => {
   }
 
   return rawRows.map(row => ({
-    id: row.id?.slice(-8) || '-',
+    id: row.id || '-',
+    unko_no: row.unko_no || '-',
     vehicle_cc: row.vehicle_cc || '-',
     vehicle_no: row.vehicle_no || '-',
     driver_code: row.driver_code || '-',

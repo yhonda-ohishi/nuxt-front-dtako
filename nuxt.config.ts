@@ -3,14 +3,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   nitro: {
     preset: 'cloudflare-pages',
-    compatibilityDate: '2025-09-13',
-    devProxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
-      }
-    }
+    compatibilityDate: '2025-09-13'
   },
   devtools: { enabled: true },
   runtimeConfig: {
