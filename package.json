@@ -3,16 +3,28 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"deploy": "wrangler deploy",
-		"dev": "wrangler dev",
+		"deploy": "npm run build && wrangler deploy",
+		"dev": "nuxt dev --port 3000",
 		"start": "wrangler dev",
 		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"build": "nuxt build",
+		"generate": "nuxt generate",
+		"preview": "nuxt preview",
+		"cf-dev": "wrangler dev",
+		"api:generate": "openapi-typescript http://localhost:8080/swagger/doc.json -o ./types/api.d.ts"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.8.19",
+		"openapi-typescript": "^7.9.1",
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
 		"wrangler": "^4.36.0"
+	},
+	"dependencies": {
+		"@nuxt/ui": "^3.3.3",
+		"nitropack": "^2.12.6",
+		"nuxt": "^4.1.2",
+		"openapi-fetch": "^0.14.0"
 	}
 }
