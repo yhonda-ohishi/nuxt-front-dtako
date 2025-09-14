@@ -7,10 +7,100 @@
       </UButton>
     </div>
 
+    <!-- Row Information Card -->
+    <UCard class="mb-6" v-if="rowData">
+      <template #header>
+        <h2 class="text-xl font-semibold">運行データ情報</h2>
+      </template>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+        <div v-if="rowData.id">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">ID</label>
+          <p class="text-lg">
+            <a :href="`/events/${rowData.id}`" class="text-blue-600 hover:underline font-medium cursor-pointer">
+              ...{{ rowData.id.slice(-8) }}
+            </a>
+          </p>
+        </div>
+        <div v-if="rowData.unko_no">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Unko No</label>
+          <p class="text-lg">
+            <a :href="`/events/${rowData.unko_no}`" class="text-blue-600 hover:underline font-medium cursor-pointer">
+              ...{{ rowData.unko_no.slice(-8) }}
+            </a>
+          </p>
+        </div>
+        <div v-if="rowData.vehicle_cc">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle CC</label>
+          <p class="text-lg font-semibold">{{ rowData.vehicle_cc }}</p>
+        </div>
+        <div v-if="rowData.vehicle_no">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle No</label>
+          <p class="text-lg font-semibold">{{ rowData.vehicle_no }}</p>
+        </div>
+        <div v-if="rowData.driver_code">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver Code</label>
+          <p class="text-lg font-semibold">{{ rowData.driver_code }}</p>
+        </div>
+        <div v-if="rowData.distance">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Distance</label>
+          <p class="text-lg text-blue-600">{{ rowData.distance ? `${parseFloat(rowData.distance).toFixed(1)} km` : '0 km' }}</p>
+        </div>
+        <div v-if="rowData.fuel_amount">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fuel</label>
+          <p class="text-lg text-green-600">{{ rowData.fuel_amount ? `${parseFloat(rowData.fuel_amount).toFixed(1)} L` : '0 L' }}</p>
+        </div>
+        <div v-if="rowData.date">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+          <p class="text-lg">{{ rowData.date ? new Date(rowData.date).toLocaleDateString('ja-JP') : '-' }}</p>
+        </div>
+        <div v-if="rowData.start_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Time</label>
+          <p class="text-lg">{{ rowData.start_time }}</p>
+        </div>
+        <div v-if="rowData.end_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Time</label>
+          <p class="text-lg">{{ rowData.end_time }}</p>
+        </div>
+        <div v-if="rowData.working_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Working Time</label>
+          <p class="text-lg">{{ rowData.working_time }}</p>
+        </div>
+        <div v-if="rowData.driving_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Driving Time</label>
+          <p class="text-lg">{{ rowData.driving_time }}</p>
+        </div>
+        <div v-if="rowData.rest_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Rest Time</label>
+          <p class="text-lg">{{ rowData.rest_time }}</p>
+        </div>
+        <div v-if="rowData.max_speed">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Max Speed</label>
+          <p class="text-lg text-red-600">{{ rowData.max_speed }} km/h</p>
+        </div>
+        <div v-if="rowData.avg_speed">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Avg Speed</label>
+          <p class="text-lg">{{ rowData.avg_speed }} km/h</p>
+        </div>
+        <div v-if="rowData.over_speed_count">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Over Speed Count</label>
+          <p class="text-lg text-orange-600">{{ rowData.over_speed_count }}</p>
+        </div>
+        <div v-if="rowData.idling_time">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Idling Time</label>
+          <p class="text-lg text-yellow-600">{{ rowData.idling_time }}</p>
+        </div>
+        <div v-if="rowData.fuel_efficiency">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fuel Efficiency</label>
+          <p class="text-lg text-purple-600">{{ rowData.fuel_efficiency }} km/L</p>
+        </div>
+      </div>
+    </UCard>
+
     <UCard>
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">ID: {{ $route.params.id }}</h2>
+          <h2 class="text-xl font-semibold">イベント一覧 (ID: {{ $route.params.id }})</h2>
           <UButton @click="fetchData" :loading="loading" variant="outline">
             更新
           </UButton>
@@ -69,13 +159,14 @@
 
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
+// import type { TableColumn } from '@nuxt/ui'
 
 const UButton = resolveComponent('UButton')
 const route = useRoute()
 const loading = ref(false)
 const error = ref(null)
 const events = ref([])
+const rowData = ref(null)
 
 // Sorting state - default to event_date ASC
 const sorting = ref([
@@ -86,7 +177,7 @@ const sorting = ref([
 ])
 
 // Column definitions with sorting
-const columns: TableColumn[] = [
+const columns = [
   {
     accessorKey: 'event_type',
     header: ({ column }) => {
@@ -100,10 +191,28 @@ const columns: TableColumn[] = [
       })
     },
     cell: ({ row }) => {
+      const eventType = row.getValue('event_type')
+      let linkClass = 'text-blue-600 hover:underline font-medium cursor-pointer'
+      let bgClass = ''
+
+      if (eventType === '積み') {
+        linkClass = 'text-green-600 hover:underline font-medium cursor-pointer'
+      } else if (eventType === '降し') {
+        linkClass = 'text-yellow-600 hover:underline font-medium cursor-pointer'
+      } else if (eventType === '休憩' || eventType === '休息') {
+        linkClass = 'text-green-300 hover:underline font-medium cursor-pointer'
+      } else if (eventType === '運行開始') {
+        linkClass = 'text-white hover:underline font-medium cursor-pointer'
+        bgClass = 'bg-blue-500 px-2 py-1 rounded'
+      } else if (eventType === '運行終了') {
+        linkClass = 'text-white hover:underline font-medium cursor-pointer'
+        bgClass = 'bg-red-500 px-2 py-1 rounded'
+      }
+
       return h('a', {
         href: `/events/detail/${row.original.id}`,
-        class: 'text-blue-600 hover:underline font-medium cursor-pointer'
-      }, row.getValue('event_type'))
+        class: `${linkClass} ${bgClass}`
+      }, eventType)
     }
   },
   {
@@ -142,13 +251,15 @@ const excludedEventTypes = [
   '一般道速度オーバー',
   '一般道実車',
   '一般道空車',
-  'アイドリング'
+  'アイドリング',
+  '専用道'
 ]
 
 // Event types to completely hide (not show even in excluded section)
 const hiddenEventTypes = [
   '一般道実車',
-  '一般道空車'
+  '一般道空車',
+  '専用道'
 ]
 
 // Computed sorted events - exclude certain event types
@@ -212,24 +323,43 @@ const fetchData = async () => {
   error.value = null
 
   try {
-    const response = await $fetch('/api/dtako/events', {
+    // Fetch row data from dtako/rows API
+    const rowResponse = await $fetch('/api/dtako/rows', {
       params: { id: route.params.id }
     })
-    console.log('Fetched events:', response)
+    console.log('Fetched row data:', rowResponse)
 
-    if (Array.isArray(response)) {
-      events.value = response
-    } else if (response.events) {
-      events.value = response.events
-    } else if (response.data) {
-      events.value = response.data
+    // Handle row data response
+    if (Array.isArray(rowResponse)) {
+      rowData.value = rowResponse[0]
+    } else if (rowResponse.data && Array.isArray(rowResponse.data)) {
+      rowData.value = rowResponse.data[0]
+    } else if (rowResponse.rows && Array.isArray(rowResponse.rows)) {
+      rowData.value = rowResponse.rows[0]
+    } else {
+      rowData.value = rowResponse
+    }
+
+    // Fetch events data
+    const eventsResponse = await $fetch('/api/dtako/events', {
+      params: { id: route.params.id }
+    })
+    console.log('Fetched events:', eventsResponse)
+
+    if (Array.isArray(eventsResponse)) {
+      events.value = eventsResponse
+    } else if (eventsResponse.events) {
+      events.value = eventsResponse.events
+    } else if (eventsResponse.data) {
+      events.value = eventsResponse.data
     } else {
       events.value = []
     }
   } catch (err) {
     console.error('Fetch error:', err)
-    error.value = err.data?.message || err.message || 'Failed to fetch events'
+    error.value = err.data?.message || err.message || 'Failed to fetch data'
     events.value = []
+    rowData.value = null
   } finally {
     loading.value = false
   }

@@ -69,12 +69,28 @@
 
               <div v-if="eventData.start_place_name">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Place</label>
-                <p class="text-lg">{{ eventData.start_place_name }}</p>
+                <p class="text-lg">
+                  <a
+                    :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventData.start_place_name)}`"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    {{ eventData.start_place_name }}
+                  </a>
+                </p>
               </div>
 
               <div v-if="eventData.end_place_name">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Place</label>
-                <p class="text-lg">{{ eventData.end_place_name }}</p>
+                <p class="text-lg">
+                  <a
+                    :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventData.end_place_name)}`"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    {{ eventData.end_place_name }}
+                  </a>
+                </p>
               </div>
             </div>
           </div>
@@ -84,11 +100,73 @@
             <p class="text-lg bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">{{ eventData.description }}</p>
           </div>
 
-          <div v-if="eventData.latitude && eventData.longitude" class="mt-6">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Location</label>
-            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <p>緯度: {{ eventData.latitude }}</p>
-              <p>経度: {{ eventData.longitude }}</p>
+          <!-- Location Map -->
+          <div v-if="hasLocationData" class="mt-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Route Map</label>
+
+            <!-- Location Details -->
+            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-4">
+              <div v-if="eventData.latitude && eventData.longitude">
+                <p><strong>Current Location:</strong> {{ eventData.latitude }}, {{ eventData.longitude }}</p>
+              </div>
+              <div v-if="eventData.start_city_name">
+                <p><strong>Start City:</strong> {{ eventData.start_city_name }}</p>
+              </div>
+              <div v-if="eventData.end_city_name">
+                <p><strong>End City:</strong> {{ eventData.end_city_name }}</p>
+              </div>
+            </div>
+
+            <!-- Google Maps with Route -->
+            <div class="mt-4">
+              <!-- Interactive Google Maps with straight line -->
+              <GoogleMapsRoute
+                v-if="eventData.start_city_name || eventData.end_city_name || (eventData.latitude && eventData.longitude)"
+                :start-city="eventData.start_city_name"
+                :end-city="eventData.end_city_name"
+                :start-place-name="eventData.start_place_name"
+                :end-place-name="eventData.end_place_name"
+                :latitude="eventData.latitude"
+                :longitude="eventData.longitude"
+                :event-type="eventData.event_type"
+                :event-date="eventData.event_date"
+                :vehicle-no="eventData.vehicle_no"
+                :driver-code="eventData.driver_code"
+                :height="500"
+              />
+              <!-- Fallback for no location data -->
+              <div v-else class="text-center py-12 text-gray-500 border rounded-lg">
+                <UIcon name="i-heroicons-map" class="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <p>No location data available</p>
+              </div>
+            </div>
+
+            <!-- Google Maps links -->
+            <div class="mt-4 flex gap-4 justify-center text-sm">
+              <a
+                v-if="eventData.start_city_name"
+                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventData.start_city_name)}`"
+                target="_blank"
+                class="text-blue-600 hover:underline"
+              >
+                📍 Start City
+              </a>
+              <a
+                v-if="eventData.end_city_name"
+                :href="`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(eventData.end_city_name)}`"
+                target="_blank"
+                class="text-blue-600 hover:underline"
+              >
+                📍 End City
+              </a>
+              <a
+                v-if="eventData.start_city_name && eventData.end_city_name"
+                :href="googleMapsDirectionsUrl"
+                target="_blank"
+                class="text-green-600 hover:underline"
+              >
+                🗺️ Get Directions
+              </a>
             </div>
           </div>
         </div>
@@ -112,6 +190,22 @@ const eventData = ref(null)
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleString('ja-JP')
 }
+
+// Check if we have location data to display the map
+const hasLocationData = computed(() => {
+  return eventData.value && (
+    (eventData.value.latitude && eventData.value.longitude) ||
+    eventData.value.start_city_name ||
+    eventData.value.end_city_name
+  )
+})
+
+// Generate Google Maps directions URL for external link
+const googleMapsDirectionsUrl = computed(() => {
+  if (!eventData.value || !eventData.value.start_city_name || !eventData.value.end_city_name) return ''
+
+  return `https://www.google.com/maps/dir/${encodeURIComponent(eventData.value.start_city_name)}/${encodeURIComponent(eventData.value.end_city_name)}`
+})
 
 const fetchData = async () => {
   loading.value = true
